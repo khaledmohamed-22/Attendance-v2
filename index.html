@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance Registration System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #005f73;
+      --secondary-color: #0a9396;
+      --background-start: #e9d8a6;
+      --background-end: #ee9b00;
+      --text-color: #001219;
+      --header-text: #ffffff;
+      --shadow-color: rgba(0, 24, 49, 0.1);
+      --success-bg: rgba(67, 160, 71, 0.1);
+      --error-bg: rgba(211, 47, 47, 0.1);
+      --success-border: #43a047;
+      --error-border: #d32f2f;
+      --delete-red: #d32f2f;
+      --delete-red-hover: #b71c1c;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, var(--background-start), var(--background-end));
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      color: var(--text-color);
+    }
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 var(--shadow-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+    h1 {
+      color: var(--primary-color);
+      font-weight: 700;
+      text-align: center;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
+    }
+    /* --- NEW: Style for the counter --- */
+    #counter {
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 1.5rem;
+        margin-top: -1rem; /* Adjust spacing */
+    }
+    #reader {
+      width: 100%;
+      max-width: 450px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px var(--shadow-color);
+      background: #fff;
+    }
+    .result-box {
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 500;
+      text-align: center;
+      width: 100%;
+      max-width: 650px;
+      border: 2px solid;
+    }
+    .result-box.default { background-color: rgba(0, 95, 115, 0.1); border-color: var(--primary-color); color: var(--primary-color); }
+    .result-box.success { background-color: var(--success-bg); border-color: var(--success-border); color: var(--success-border); }
+    .result-box.error { background-color: var(--error-bg); border-color: var(--error-border); color: var(--error-border); }
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px var(--shadow-color);
+    }
+    .attendance-table {
+      width: 100%;
+      min-width: 900px; /* Force scroll on small screens */
+      border-collapse: collapse;
+    }
+    .attendance-table th, .attendance-table td {
+      padding: 1rem;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .attendance-table thead { background: var(--primary-color); color: var(--header-text); }
+    .attendance-table tbody tr {
+      background-color: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      transition: background-color 0.3s ease;
+    }
+    .attendance-table tbody tr:last-of-type { border-bottom: none; }
+    .attendance-table tbody tr:hover { background-color: rgba(148, 210, 189, 0.3); }
+    #downloadBtn {
+      padding: 0.8rem 2rem;
+      background: linear-gradient(145deg, var(--secondary-color), var(--primary-color));
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 15px rgba(0, 95, 115, 0.2);
+    }
+    #downloadBtn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0, 95, 115, 0.3);
+    }
+    footer { font-size: 0.9rem; opacity: 0.8; margin-top: 1rem; }
+    footer span { color: var(--primary-color); font-weight: 600; }
+
+    .delete-btn {
+      padding: 0.4rem 0.8rem;
+      background-color: var(--delete-red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
+      transition: background-color 0.2s ease;
+    }
+    .delete-btn:hover {
+      background-color: var(--delete-red-hover);
+    }
+
+    @media screen and (max-width: 768px) {
+      body { padding: 1rem 0.5rem; }
+      .container { padding: 1.5rem 1rem; }
+      .attendance-table th, .attendance-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>📋 Attendance System</h1>
+    <h2 id="counter">Attendees: 0</h2>
+    
+    <div id="reader"></div>
+    <div id="result" class="result-box default">📷 Scan a QR code to record attendance.</div>
+
+    <div class="table-container">
+      <table class="attendance-table" id="attendanceTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>National ID</th>
+            <th>Committee</th>
+            <th>Position</th>
+            <th>Scan Time</th>
+            <th>Actions</th> 
+          </tr>
+        </thead>
+        <tbody id="attendanceBody"></tbody>
+      </table>
+    </div>
+
+    <button id="downloadBtn">⬇️ Download as Excel</button>
+    <footer>Responsible Manager: <span>Ahmed Abu Al-Nasr</span></footer>
+  </div>
+<script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxHy3A59Hz9dfyJSILmiLmqv1s-sFTmj8OvHB3TAsNt5d2iTrZIQtex6BVlxn1JYoi3/exec"; 
+
+    const scannedIDs = new Set();
+    const resultDiv = document.getElementById("result");
+    const tableBody = document.getElementById("attendanceBody");
+    const SESSION_KEY = 'sessionAttendanceRecords';
+    
+    // --- NEW: Variables for the counter ---
+    const counterElement = document.getElementById("counter");
+    let registrationCount = 0;
+
+    // --- NEW: Function to update the counter display ---
+    function updateCounterDisplay() {
+        counterElement.innerHTML = `👥 Attendees: ${registrationCount}`;
+    }
+
+    function loadRecordsFromSession() {
+        const storedRecords = sessionStorage.getItem(SESSION_KEY);
+        if (storedRecords) {
+            const records = JSON.parse(storedRecords);
+            records.forEach(record => {
+                addRecordToTable(record);
+                scannedIDs.add(record.nationalId);
+            });
+            // --- NEW: Set initial count based on session data ---
+            registrationCount = records.length;
+        }
+        updateCounterDisplay(); // Update display on page load
+    }
+
+    function saveRecordToSession(record) {
+        const currentRecords = JSON.parse(sessionStorage.getItem(SESSION_KEY)) || [];
+        currentRecords.push(record);
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentRecords));
+    }
+
+    function addRecordToTable(record) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+          <td>${record.name}</td>
+          <td>${record.phone}</td>
+          <td>${record.nationalId}</td>
+          <td>${record.committee}</td>
+          <td>${record.position}</td>
+          <td>${record.time}</td>
+          <td>
+            <button class="delete-btn" data-id="${record.nationalId}">Delete</button>
+          </td>
+      `;
+      tableBody.appendChild(row);
+    }
+    
+    function extractInfo(decodedText) {
+      const info = {};
+      const lines = decodedText.split(/\r?\n/);
+      const getValue = (label) => {
+        const line = lines.find((l) => l.trim().toLowerCase().startsWith(label.toLowerCase()));
+        return line ? line.split(":")[1]?.trim() : "Unknown";
+      };
+      info.name = getValue("Name:");
+      info.phone = getValue("Phone:");
+      info.nationalId = getValue("National ID:") || getValue("ID:");
+      info.committee = getValue("Committee:");
+      info.position = getValue("Position:");
+      return info;
+    }
+
+    function onScanSuccess(decodedText) {
+      const { name, phone, nationalId, committee, position } = extractInfo(decodedText);
+
+      if (nationalId === "Unknown" || !nationalId) {
+        resultDiv.innerHTML = `⚠️ <b>Error:</b> Invalid QR format. Could not find National ID.`;
+        resultDiv.className = "result-box error";
+        return;
+      }
+      if (scannedIDs.has(nationalId)) {
+        resultDiv.innerHTML = `⚠️ <b>Duplicate:</b> This person is already registered in this session! (ID: ${nationalId})`;
+        resultDiv.className = "result-box error";
+        return;
+      }
+
+      scannedIDs.add(nationalId);
+      const newRecord = { name, phone, nationalId, committee, position, time: new Date().toLocaleString() };
+
+      saveRecordToSession(newRecord);
+
+      resultDiv.innerHTML = ` Sening data for <b>${name}</b>...`;
+      resultDiv.className = "result-box default";
+      
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newRecord)
+      })
+      .then(response => {
+          addRecordToTable(newRecord);
+          // --- NEW: Increment and update counter on success ---
+          registrationCount++;
+          updateCounterDisplay();
+          
+          resultDiv.innerHTML = `✅ <b>Success!</b> Attendance Recorded for <b>${name}</b>.`;
+          resultDiv.className = "result-box success";
+      })
+      .catch(error => {
+          resultDiv.innerHTML = `❌ <b>Error!</b> Could not save data. Check connection.`;
+          resultDiv.className = "result-box error";
+          scannedIDs.delete(nationalId);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      loadRecordsFromSession();
+
+      tableBody.addEventListener('click', function(event) {
+        if (event.target.classList.contains('delete-btn')) {
+          const button = event.target;
+          const nationalIdToDelete = button.dataset.id;
+          
+          if (confirm(`Remove this record from your view?\n(It will NOT be deleted from the master Google Sheet)`)) {
+             button.closest('tr').remove();
+             scannedIDs.delete(nationalIdToDelete);
+
+             let records = JSON.parse(sessionStorage.getItem(SESSION_KEY)) || [];
+             const updatedRecords = records.filter(record => record.nationalId !== nationalIdToDelete);
+             sessionStorage.setItem(SESSION_KEY, JSON.stringify(updatedRecords));
+             
+             // --- NEW: Decrement and update counter on delete ---
+             registrationCount--;
+             updateCounterDisplay();
+          }
+        }
+      });
+      
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        if (tableBody.rows.length === 0) {
+          alert("There is no data to download!");
+          return;
+        }
+        const table = document.getElementById("attendanceTable");
+        const actionsHeader = table.querySelector('thead th:last-child');
+        const actionCells = table.querySelectorAll('tbody td:last-child');
+        actionsHeader.style.display = 'none';
+        actionCells.forEach(cell => cell.style.display = 'none');
+
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Attendance" });
+        XLSX.writeFile(wb, "attendance_records.xlsx");
+
+        actionsHeader.style.display = '';
+        actionCells.forEach(cell => cell.style.display = '');
+      });
+      
+      let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: { width: 250, height: 250 } }, false);
+      html5QrcodeScanner.render(onScanSuccess);
+    });
+  </script>
+</body>
+</html>
